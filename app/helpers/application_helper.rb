@@ -66,25 +66,8 @@ module ApplicationHelper
     EOC
   end
 
-  def remote_javascript_includes
-    if 'production' == RAILS_ENV
-      javascript_include_tag(
-        'http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js',
-        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/jquery-ui.min.js'
-      )
-    else
-      javascript_include_tag(
-        'jquery.js',
-        'jquery-ui.js'
-      )
-    end
+  def default_javascript_includes
+    javascript_include_tag(:jrails, :defaults)
   end
 
-  def local_javascript_includes
-    javascript_include_tag(
-      'jquery.rater.js',
-      'jrails',
-      'application'
-    )
-  end
 end

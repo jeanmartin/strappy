@@ -48,7 +48,7 @@ file 'Gemfile', <<-EOGEMS
 source 'http://rubygems.org'
 source 'http://gems.github.com'
 
-gem 'rails', '3.0.0.beta2'
+gem 'rails', '3.0.0.beta4'
 gem 'authlogic', :git => 'git://github.com/binarylogic/authlogic.git'
 gem 'capistrano', '2.5.18'
 gem 'capistrano-ext', '1.2.1'
@@ -64,7 +64,7 @@ gem 'test-unit', '1.2.3'
 gem 'will_paginate', '2.3.12'
 
 group :test do
-  gem 'webrat'
+  gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
   gem 'database_cleaner'
@@ -107,7 +107,7 @@ git :add => "."
 git :commit => "-am 'Added RSpec'"
 
 # Cucumber
-gen 'cucumber:skeleton --rspec --webrat'
+gen 'cucumber:install --rspec --capybara'
 
 file_str_replace('config/cucumber.yml', 
   %q{rerun = File.file?('rerun.txt') ? IO.read('rerun.txt') : ""},
@@ -178,48 +178,26 @@ end
 git :add => "."
 git :commit => "-am 'Added Haml and Sass stylesheets'"
 
-# jRails
-plugin 'jrails', :svn => 'http://ennerchi.googlecode.com/svn/trunk/plugins/jrails'
 
-# remove the installed files, we're using a newer version below
-inside('public/javascripts') do
-  %w(
-    jquery-ui.js
-    jquery.js
-  ).each do |file|
-    run "rm -f #{file}"
-  end
-end
+# jRails
+plugin 'jrails', :git => 'git://github.com/jeanmartin/jrails.git'
+gen 'jrails'
+rake('jrails:js:scrub')
+
+file 'config/initializers/jrails.rb', <<-EOF
+ActionView::Helpers::PrototypeHelper::DISABLE_JQUERY_FORGERY_PROTECTION = true
+EOF
 
 git :add => "."
 git :commit => "-am 'Added jRails plugin'"
 
-# jQuery
-
-# clean up prototype files
-inside('public/javascripts') do
-  %w(
-    application.js
-    controls.js
-    dragdrop.js
-    effects.js
-    prototype.js
-  ).each do |file|
-    run "rm -f #{file}"
-  end
-end
-
-file 'public/javascripts/jquery.js',
-  open('http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js').read
-file 'public/javascripts/jquery-ui.js',
-  open('http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/jquery-ui.min.js').read
 file 'public/javascripts/jquery.form.js',
   open('http://github.com/malsup/form/raw/master/jquery.form.js').read
 file 'public/javascripts/application.js',
   open("#{SOURCE}/public/javascripts/application.js").read
 
 git :add => "."
-git :commit => "-am 'Added jQuery with UI and form plugin'"
+git :commit => "-am 'Added jQuery form plugin and custom application.js'"
 
 # Blackbird
 run 'mkdir -p public/blackbird'
@@ -242,24 +220,31 @@ plugin 'uberkit', :git => 'git://github.com/mbleigh/uberkit.git'
 git :add => "."
 git :commit => "-am 'Added Haml and Sass stylesheets'"
 
+# TBR: REMOVED BUNDLE-FU PLUGIN
 # add bundle-fu
-plugin 'bundle-fu',
-  :git => 'git://github.com/timcharper/bundle-fu.git'
-git :add => "."
-git :commit => "-am 'Added bundle-fu'"
+# plugin 'bundle-fu',
+#   :git => 'git://github.com/timcharper/bundle-fu.git'
+# git :add => "."
+# git :commit => "-am 'Added bundle-fu'"
 
 # Setup Authlogic
 # rails gets cranky when this isn't included in the config
-gen 'session user_session'
+gen 'model user_session'
 
 # allow login by login or pass
-file_inject('/app/models/user_session.rb',
-  "class UserSession < Authlogic::Session::Base",
-  "  find_by_login_method :find_by_login_or_email",
-  :after
-)
+file 'app/models/user_session.rb', <<-EOF
+class UserSession < Authlogic::Session::Base
+  find_by_login_method :find_by_login_or_email
 
-gen 'rspec_controller user_sessions'
+  # From here: http://github.com/binarylogic/authlogic/issues/issue/101/#comment_142986 
+  def to_key
+    new_record? ? nil : [ self.send(self.class.primary_key) ] 
+  end
+
+end
+EOF
+
+gen 'controller user_sessions'
 gen 'scaffold user'
 
 # get rid of the gend templates
@@ -334,7 +319,7 @@ end
 file "db/fixtures/users.rb", open("#{SOURCE}/db/fixtures/users.rb").read
 
 # testing goodies
-file_inject('/spec/spec_helper.rb',
+file_inject('spec/spec_helper.rb',
   "require 'spec/rails'",
   "require 'authlogic/test_case'\n",
   :after
@@ -388,7 +373,7 @@ file 'app/controllers/application_controller.rb',
   open("#{SOURCE}/app/controllers/application_controller.rb").read
 
 # Add in the :xhr mime type
-file_inject('/config/initializers/mime_types.rb',
+file_inject('config/initializers/mime_types.rb',
   '# Be sure to restart your server when you modify this file.',
   'Mime::Type.register_alias "text/html", :xhr',
   :after
@@ -446,7 +431,7 @@ git :commit => "-am 'Added admin stubs'"
 
 # Remove index.html and add HomeController
 git :rm => 'public/index.html'
-gen :rspec_controller, 'home'
+gen 'controller home'
 route "map.root :controller => 'home'"
 
 file 'app/views/home/index.html.haml',

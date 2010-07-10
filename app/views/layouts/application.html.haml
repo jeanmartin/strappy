@@ -13,8 +13,6 @@
     = render :partial => 'layouts/common_headers'
     %title= page_title
   = render :partial => 'layouts/body'
-  = remote_javascript_includes
-  - bundle do
-    = local_javascript_includes
+  = default_javascript_includes
   = blackbird_tags
   = render :partial => 'layouts/on_ready'
