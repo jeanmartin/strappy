@@ -1,5 +1,5 @@
 # use this for local installs
-SOURCE=ENV['SOURCE'] || 'http://github.com/pixels-and-bits/strappy/raw/master'
+SOURCE=ENV['SOURCE'] || 'http://github.com/jeanmartin/strappy/raw/master'
 
 def gen(what)
   run "./script/rails g #{what}"
