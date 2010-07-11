@@ -55,6 +55,7 @@ gem 'haml', '>=3.0.13'
 gem 'hoe', '>=2.6.1'
 gem 'mongrel'
 gem 'mysql'
+gem 'factory_girl_rails'
 gem 'seed-fu', :git => 'git://github.com/mixonic/seed-fu.git'
 gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', '>=2.3.14'
@@ -66,7 +67,6 @@ group :test do
   gem 'database_cleaner'
   gem 'faker'
   gem 'launchy'
-  gem 'machinist'
   gem 'pickle'
   gem 'rcov'
   gem 'rspec-rails', '>= 2.0.0.beta.1'
@@ -259,6 +259,7 @@ CODE
 # Setup Authlogic
 # rails gets cranky when this isn't included in the config
 gen 'model user_session'
+run 'rm db/migrate/*_create_user_sessions.rb'
 
 # allow login by login or pass
 file 'app/models/user_session.rb', <<-EOF
