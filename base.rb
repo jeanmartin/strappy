@@ -177,7 +177,7 @@ git :commit => "-am 'Added jRails plugin'"
 
 plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
 file 'db/bootstrap.rb', <<-EOF
-require File.join(Rails.root, 'spec', 'factories')
+Dir.glob(File.join(Rails.root, 'spec/factories/*.rb')).each {|f| require f }
 
 Bootstrapper.for :development do |b|
   b.truncate_tables :users
