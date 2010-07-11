@@ -78,28 +78,6 @@ git :add => "."
 git :commit => "-am 'Add Gemfile, install gems'"
 
 
-# Bootstrapper
-plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
-file 'db/bootstrap.rb', <<-EOF
-Bootstrapper.for :development do |b|
-  b.truncate_tables :users
-
-  Factory(:admin)
-end
-
-Bootstrapper.for :production do |b|
-end
-
-Bootstrapper.for :test do |b|
-end
-
-Bootstrapper.for :staging do |b|
-end
-EOF
-git :add => "."
-git :commit => "-am 'Added Bootstrapper plugin'"
-
-
 # CoreExtensions
 plugin 'core_extensions',
   :git => 'git://github.com/UnderpantsGnome/core_extensions.git'
@@ -197,6 +175,32 @@ EOF
 
 git :add => "."
 git :commit => "-am 'Added jRails plugin'"
+
+
+# Bootstrapper
+
+plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
+file 'db/bootstrap.rb', <<-EOF
+Bootstrapper.for :development do |b|
+  b.truncate_tables :users
+
+  Factory(:admin)
+end
+
+Bootstrapper.for :production do |b|
+end
+
+Bootstrapper.for :test do |b|
+end
+
+Bootstrapper.for :staging do |b|
+end
+EOF
+git :add => "."
+git :commit => "-am 'Added Bootstrapper plugin'"
+
+
+# additional js files
 
 file 'public/javascripts/jquery.form.js',
   open('http://github.com/malsup/form/raw/master/jquery.form.js').read
