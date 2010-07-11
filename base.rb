@@ -384,7 +384,7 @@ file_inject('spec/spec_helper.rb',
 # factories
 run 'mkdir -p spec/factories'
 Dir.glob('spec/factories/*.rb').each do |name|
-  file name, open("#{SOURCE}/#{name}").read
+  file "spec/factories/#{name}", open("#{SOURCE}/spec/factories/#{name}").read
 end
 
 
