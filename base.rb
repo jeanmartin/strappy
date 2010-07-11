@@ -56,7 +56,6 @@ gem 'hoe', '>=2.6.1'
 gem 'mongrel'
 gem 'mysql'
 gem 'factory_girl_rails'
-gem 'seed-fu', :git => 'git://github.com/mixonic/seed-fu.git'
 gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', '>=2.3.14'
 
@@ -90,9 +89,6 @@ rakefile 'strappy.rake', open("#{SOURCE}/lib/tasks/strappy.rake").read
 # # install haml rake tasks
 # rakefile 'haml.rake', open("#{SOURCE}/lib/tasks/haml.rake").read
 # 
-
-# install seed_fu rake tasks
-rakefile 'seed_fu.rake', open("#{SOURCE}/lib/tasks/seed_fu.rake").read
 
 # 
 # # install rcov rake tasks
@@ -181,6 +177,8 @@ git :commit => "-am 'Added jRails plugin'"
 
 plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
 file 'db/bootstrap.rb', <<-EOF
+require File.join(Rails.root, 'spec', 'factories')
+
 Bootstrapper.for :development do |b|
   b.truncate_tables :users
 
