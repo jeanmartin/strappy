@@ -372,9 +372,6 @@ end
   file "app/views/#{name}", open("#{SOURCE}/app/views/#{name}").read
 end
 
-# fixtures
-file "db/fixtures/users.rb", open("#{SOURCE}/db/fixtures/users.rb").read
-
 # testing goodies
 file_inject('spec/spec_helper.rb',
   "require 'spec/rails'",
