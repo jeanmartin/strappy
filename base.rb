@@ -213,7 +213,7 @@ git :commit => "-am 'Added Blackbird'"
 
 
 # Formtastic
-gen 'formtastic'
+gen 'formtastic:install'
 
 
 # Setup Authlogic
