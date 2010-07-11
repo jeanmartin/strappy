@@ -212,6 +212,10 @@ git :add => "."
 git :commit => "-am 'Added Blackbird'"
 
 
+# Formtastic
+gen 'formtastic'
+
+
 # Setup Authlogic
 # rails gets cranky when this isn't included in the config
 gen 'model user_session'

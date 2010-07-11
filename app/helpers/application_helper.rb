@@ -67,7 +67,7 @@ module ApplicationHelper
   end
 
   def default_javascript_includes
-    javascript_include_tag(:jrails, :defaults)
+    javascript_include_tag(:jrails)
   end
 
 end
