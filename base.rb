@@ -59,7 +59,7 @@ gem 'haml', '3.0.13'
 gem 'hoe', '2.6.1'
 gem 'mongrel'
 gem 'mysql'
-gem 'seed-fu', '1.2.3'
+gem 'seed-fu', '1.2.3', :git => 'http://github.com/mixonic/seed-fu.git'
 gem 'test-unit', '2.0.9'
 gem 'will_paginate', '2.3.14'
 
@@ -482,7 +482,7 @@ run 'rm -rf test'
 git :add => "."
 git :commit => "-am 'removed gend tests'"
 
-rake 'db:seed'
+rake 'db:seed_fu'
 
 puts "\n#{'*' * 80}\n\n"
 puts "All done. Enjoy."
