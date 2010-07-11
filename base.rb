@@ -244,6 +244,11 @@ class UserSession < Authlogic::Session::Base
 end
 EOF
 
+
+
+# get rid of the gend default layout
+run "rm app/views/layouts/application.html.erb"
+
 gen 'controller user_sessions'
 gen 'scaffold user'
 
@@ -251,7 +256,6 @@ gen 'scaffold user'
 Dir.glob('app/views/users/*.erb').each do |file|
   run "rm #{file}"
 end
-run "rm app/views/layouts/users.html.erb"
 
 gen 'controller password_reset'
 
