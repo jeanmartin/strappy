@@ -554,7 +554,7 @@ run 'rm -rf test'
 git :add => "."
 git :commit => "-am 'removed gend tests'"
 
-rake 'db:seed_fu'
+rake 'db:bootstrap'
 
 puts "\n#{'*' * 80}\n\n"
 puts "All done. Enjoy."
