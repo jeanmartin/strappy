@@ -177,8 +177,6 @@ git :commit => "-am 'Added jRails plugin'"
 
 plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
 file 'db/bootstrap.rb', <<-EOF
-Dir.glob(File.join(Rails.root, 'spec/factories/*.rb')).each {|f| require f }
-
 Bootstrapper.for :development do |b|
   b.truncate_tables :users
 
@@ -344,9 +342,11 @@ route <<-EOROUTES
   resources :users
 EOROUTES
 
+
 # migrations
 file Dir.glob('db/migrate/*_create_users.rb').first,
   open("#{SOURCE}/db/migrate/create_users.rb").read
+
 
 # models
 %w( user notifier ).each do |name|
@@ -354,11 +354,13 @@ file Dir.glob('db/migrate/*_create_users.rb').first,
     open("#{SOURCE}/app/models/#{name}.rb").read
 end
 
+
 # controllers
 %w( user_sessions password_reset users ).each do |name|
   file "app/controllers/#{name}_controller.rb",
     open("#{SOURCE}/app/controllers/#{name}_controller.rb").read
 end
+
 
 # views
 %w(
@@ -374,6 +376,7 @@ end
   file "app/views/#{name}", open("#{SOURCE}/app/views/#{name}").read
 end
 
+
 # testing goodies
 file_inject('spec/spec_helper.rb',
   "require 'spec/rails'",
@@ -381,10 +384,11 @@ file_inject('spec/spec_helper.rb',
   :after
 )
 
+
 # factories
 run 'mkdir -p spec/factories'
-Dir.glob('spec/factories/*.rb').each do |name|
-  file "spec/factories/#{name}", open("#{SOURCE}/spec/factories/#{name}").read
+%w( users ).each do |name|
+  file "spec/factories/#{name}.rb", open("#{SOURCE}/spec/factories/#{name}.rb").read
 end
 
 
