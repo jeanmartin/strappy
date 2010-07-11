@@ -13,6 +13,6 @@
     = render :partial => 'layouts/common_headers'
     %title= page_title
   = render :partial => 'layouts/body'
-  = default_javascript_includes
-  = blackbird_tags
+  = default_javascript_includes.html_safe
+  = blackbird_tags.html_safe
   = render :partial => 'layouts/on_ready'

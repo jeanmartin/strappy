@@ -54,7 +54,7 @@ gem 'capistrano', '2.5.19'
 gem 'capistrano-ext', '1.2.1'
 gem 'config_reader', '0.0.7'
 gem 'friendly_id', '3.0.6'
-gem 'formtastic', :git => 'git://github.com/justinfrench/formtastic.git'
+gem "formtastic", :git => "git://github.com/justinfrench/formtastic.git", :branch => "rails3"
 gem 'haml', '3.0.13'
 gem 'hoe', '2.6.1'
 gem 'mongrel'
@@ -211,21 +211,6 @@ file 'public/blackbird/blackbird.png',
 git :add => "."
 git :commit => "-am 'Added Blackbird'"
 
-# uberkit
-plugin 'uberkit', :git => 'git://github.com/mbleigh/uberkit.git'
-
-# git :add => "."
-# git :commit => "-am 'Added uberkit plugin'"
-
-git :add => "."
-git :commit => "-am 'Added Haml and Sass stylesheets'"
-
-# TBR: REMOVED BUNDLE-FU PLUGIN
-# add bundle-fu
-# plugin 'bundle-fu',
-#   :git => 'git://github.com/timcharper/bundle-fu.git'
-# git :add => "."
-# git :commit => "-am 'Added bundle-fu'"
 
 # Setup Authlogic
 # rails gets cranky when this isn't included in the config

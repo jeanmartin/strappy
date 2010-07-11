@@ -1,4 +1,4 @@
-- uberform_for @user_session, :url => user_session_path do |f|
+= semantic_form_for @user_session, :url => user_session_path do |f|
   %h2 Login
   = f.text_field :login, :label => 'Username'
   = f.password_field :password
@@ -8,5 +8,5 @@
     = f.submit "Login"
   = link_to 'Forgotten Password', forgot_password_path, :class => 'forgotten_password'
 
-- content_for :on_ready do
+= content_for :on_ready do
   PNB.formFocusFirst('new_user_session')
