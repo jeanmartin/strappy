@@ -28,6 +28,18 @@ def file_str_replace(file_name, sentinel, replacement)
   end
 end
 
+
+# Ask some questions
+puts "\n#{'*' * 80}\n"
+puts "Please answer the following questions with either yes [y] or no [n]"
+puts "#{'*' * 80}\n\n"
+want_geocoding  = yes?("Do you want Geocoding (using geocoder)?")
+want_puret      = yes?("Do you want model translations (using puret)?")
+want_paperclip  = yes?("Do you want file uploads (using paperclip)?")
+puts "\n#{'*' * 80}\n\n"
+
+
+
 # Git
 file_append '.gitignore', open("#{SOURCE}/gitignore").read
 git :init
@@ -58,12 +70,15 @@ gem 'mysql'
 gem 'factory_girl_rails'
 gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', '>=2.3.14'
+#{"gem 'paperclip'" if want_paperclip}
+#{"gem 'puret', :git => 'git://github.com/jo/puret.git'" if want_puret}
 
 group :test do
   gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
   gem 'database_cleaner'
+  gem 'machinist', :git => 'git://github.com/notahat/machinist.git'
   gem 'faker'
   gem 'launchy'
   gem 'pickle'
@@ -297,6 +312,9 @@ class UserSession < Authlogic::Session::Base
 end
 EOF
 
+
+# Geocoding
+plugin 'geocoder', :git => 'git://github.com/chenillen/geocoder.git' if want_geocoding
 
 
 # get rid of the gend default layout
