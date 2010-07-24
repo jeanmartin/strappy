@@ -14,7 +14,7 @@ module ApplicationHelper
     %w(notice warning error).each do |msg|
       messages << content_tag(:div, html_escape(flash[msg.to_sym]), :id => "flash-#{msg}") unless flash[msg.to_sym].blank?
     end
-    messages
+    messages.to_s
   end
 
   def blackbird_tags

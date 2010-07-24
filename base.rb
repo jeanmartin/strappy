@@ -33,9 +33,21 @@ end
 puts "\n#{'*' * 80}\n"
 puts "Please answer the following questions with either yes [y] or no [n]"
 puts "#{'*' * 80}\n\n"
-want_geocoding  = yes?("Do you want Geocoding (using geocoder)?")
+want_geocoding  = yes?("Do you want geocoding (using geocoder)?")
 want_puret      = yes?("Do you want model translations (using puret)?")
 want_paperclip  = yes?("Do you want file uploads (using paperclip)?")
+want_ssl        = yes?("Do you want SSL (ssl_requirement plugin)?")
+want_am         = yes?("Do you want online payment (using active_merchant)?")
+want_couchdb    = yes?("Do you want to use CouchDB (using simply_stored)?")
+puts "\n#{'*' * 80}\n\n"
+
+puts "\n#{'*' * 80}\n"
+puts "Some information about your application, please"
+puts "#{'*' * 80}\n\n"
+app_name        = `pwd`.split('/').last.strip
+puts "Your app name is #{app_name}"
+db_user   = ask("MySQL username [root]:") || 'root'
+db_pw     = ask("MySQL password []:") || ''
 puts "\n#{'*' * 80}\n\n"
 
 
@@ -72,13 +84,15 @@ gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', '>=2.3.14'
 #{"gem 'paperclip'" if want_paperclip}
 #{"gem 'puret', :git => 'git://github.com/jo/puret.git'" if want_puret}
+#{"gem 'simply_stored'" if want_couchdb}
+#{"gem 'activemerchant', :git => 'git://github.com/Shopify/active_merchant.git'" if want_am}
 
 group :test do
   gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
   gem 'database_cleaner'
-  gem 'machinist', :git => 'git://github.com/notahat/machinist.git'
+  gem 'machinist', '>= 2.0.0.beta1'
   gem 'faker'
   gem 'launchy'
   gem 'pickle'
@@ -90,6 +104,75 @@ EOGEMS
 run 'bundle install'
 git :add => "."
 git :commit => "-am 'Add Gemfile, install gems'"
+
+
+# install machinist
+gen 'machinist:install'
+file_inject('config/application.rb',
+  '# Configure generators values. Many other options are available, be sure to check the documentation.',
+  "
+    config.generators do |g|
+      g.fixture_replacement   :machinist
+    end",
+  :after)
+
+
+# database config
+file 'config/database.yml', 
+%Q{
+development:
+  adapter: mysql
+  database: #{app_name}_development
+  username: #{db_user}
+  password: #{db_pw}
+  host: localhost
+  encoding: utf8
+ 
+test:
+  adapter: mysql
+  database: #{app_name}_test
+  username: #{db_user}
+  password: #{db_pw}
+  host: localhost
+  encoding: utf8
+ 
+staging:
+  adapter: mysql
+  database: #{app_name}_staging
+  username: #{app_name}
+  password:
+  host: localhost
+  encoding: utf8
+  socket: /var/lib/mysql/mysql.sock
+ 
+production:
+  adapter: mysql
+  database: #{app_name}
+  username: #{app_name}
+  password:
+  host: localhost
+  encoding: utf8
+  socket: /var/lib/mysql/mysql.sock
+}
+
+
+# simply_stored
+if want_couchdb
+  file 'config/couchdb.yml', <<-EOF
+development: #{app_name}
+test:  #{app_name}_test
+production: http://db.server/#{app_name}
+EOF
+  initializer 'simply_stored.rb', <<-EOF
+require 'simply_stored/couch'  
+#CouchPotato::Config.database_name = '#{app_name}'
+EOF
+end
+
+
+# core plugins
+plugin 'dynamic_form', :git => 'git://github.com/rails/dynamic_form.git'
+plugin 'ssl_requirement', :git => 'git://github.com/rails/ssl_requirement.git' if want_ssl
 
 
 # CoreExtensions
@@ -328,7 +411,7 @@ Dir.glob('app/views/users/*.erb').each do |file|
   run "rm #{file}"
 end
 
-gen 'controller password_reset'
+gen 'controller password_resets'
 
 route <<-EOROUTES
   root :to => 'home#index'
@@ -351,12 +434,12 @@ route <<-EOROUTES
 
   match 'forgot_password',
     :as => :forgot_password,
-    :to => 'password_reset#new'
+    :to => 'password_resets#new'
 
   resource :account, :controller => "users"
   resource :user_session
 
-  resources :password_reset
+  resources :password_resets
   resources :users
 EOROUTES
 
@@ -374,7 +457,7 @@ end
 
 
 # controllers
-%w( user_sessions password_reset users ).each do |name|
+%w( user_sessions password_resets users ).each do |name|
   file "app/controllers/#{name}_controller.rb",
     open("#{SOURCE}/app/controllers/#{name}_controller.rb").read
 end
@@ -382,9 +465,9 @@ end
 
 # views
 %w(
-  notifier/password_reset_instructions.erb
-  password_reset/edit.html.haml
-  password_reset/new.html.haml
+  notifier/password_reset_instructions.text.erb
+  password_resets/edit.html.haml
+  password_resets/new.html.haml
   user_sessions/new.html.haml
   users/_form.haml
   users/edit.html.haml
@@ -416,7 +499,7 @@ run 'mkdir -p spec/fixtures'
 %w(
   fixtures/users.yml
   helpers/application_helper_spec.rb
-  controllers/password_reset_controller_spec.rb
+  controllers/password_resets_controller_spec.rb
   controllers/user_sessions_controller_spec.rb
   controllers/users_controller_spec.rb
   models/user_spec.rb
@@ -444,10 +527,6 @@ end
 
 git :add => "."
 git :commit => "-am 'Added features'"
-
-route "map.forgot_password '/forgot_password',
-  :controller => 'password_reset',
-  :action => 'new'"
 
 rake('db:migrate')
 git :add => "."
@@ -509,15 +588,12 @@ file "spec/controllers/admin/base_controller_spec.rb",
 file "app/helpers/admin/base_helper.rb",
   open("#{SOURCE}/app/helpers/admin/base_helper.rb").read
 
-route "map.admin '/admin', :controller => 'admin/base'"
-
 git :add => "."
 git :commit => "-am 'Added admin stubs'"
 
 # Remove index.html and add HomeController
 git :rm => 'public/index.html'
 gen 'controller home'
-route "map.root :controller => 'home'"
 
 file 'app/views/home/index.html.haml',
   open("#{SOURCE}/app/views/home/index.html.haml").read

@@ -6,11 +6,11 @@ Before do
 end
 
 Given /^a user$/ do
-  @user = User.make
+  @user = User.make!
 end
 
 Given /^an admin user$/ do
-  @user = User.make(:admin)
+  @user = User.make!(:admin)
 end
 
 Given /^a logged in user$/ do

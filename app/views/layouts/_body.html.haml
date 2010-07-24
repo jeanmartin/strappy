@@ -6,7 +6,7 @@
       %ul.reg_nav
         = yield :header_nav
     #content
-      = flash_messages
+      = flash_messages.html_safe
       = yield :layout
       %br.clear
       .push
