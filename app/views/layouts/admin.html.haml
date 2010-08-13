@@ -1,14 +1,40 @@
-- content_for :header_nav do
-  %li= link_to 'admin home', admin_path
-  %li= link_to 'site home', root_path
+!!! XML
+!!!
+%html{html_attrs}
+  %head
+    %meta{ http_equiv_attrs }
+    %meta{ 'http-equiv' => 'imagetoolbar', :content => 'no' }
+    %meta{ :name => 'distribution', :content => 'all' }
+    %meta{ :name => 'robots', :content => 'all' }
+    %meta{ :name => 'resource-type', :content => 'document' }
+    %meta{ :name => 'MSSmartTagsPreventParsing', :content => 'true' }
+    = stylesheet_link_tag 'application'
+    = formtastic_stylesheet_link_tag.html_safe
+    = stylesheet_link_tag 'print', :media => 'print'
+    = csrf_meta_tag
+    = yield :head
+    %title= page_title
+  %body 
+    #container
+      #header
+        %h1.title
+          =link_to SiteConfig.site_name, root_path
+        %ul.reg_nav
+          %li= link_to 'admin home', admin_path
+          %li= link_to 'site home', root_path
+      #content
+        = flash_messages.html_safe
+        = yield :layout
+        %br.clear
+        .push
+    %footer
+      &copy; 2010 YOUR COMPANY NAME
 
-  !!! XML
-  !!!
-  %html{html_attrs}
-    %head
-      = render :partial => 'layouts/common_headers'
-      %title= page_title
-    = render :partial => 'layouts/body'
-    = default_javascript_includes
-    = blackbird_tags
-    = render :partial => 'layouts/on_ready'
+  = default_javascript_includes
+  = blackbird_tags
+  %script{ :type => 'text/javascript', :charset => 'utf-8' }
+    $(document).ready(function() {
+    - unless SiteConfig.google_tracker_id.blank?
+      PNB.load_gat('#{SiteConfig.google_tracker_id}')
+    = yield :on_ready
+    })

@@ -1,18 +1,45 @@
-- content_for :header_nav do
-  - if current_user
-    %li= link_to 'my account', account_path
-    %li= link_to 'sign out', logout_path
-  - else
-    %li= link_to 'sign in', login_path
-    %li= link_to 'sign up', signup_path
-
 !!! XML
 !!!
 %html{html_attrs}
   %head
-    = render :partial => 'layouts/common_headers'
+    %meta{ http_equiv_attrs }
+    %meta{ 'http-equiv' => 'imagetoolbar', :content => 'no' }
+    %meta{ :name => 'distribution', :content => 'all' }
+    %meta{ :name => 'robots', :content => 'all' }
+    %meta{ :name => 'resource-type', :content => 'document' }
+    %meta{ :name => 'MSSmartTagsPreventParsing', :content => 'true' }
+    = stylesheet_link_tag 'application'
+    = formtastic_stylesheet_link_tag.html_safe
+    = stylesheet_link_tag 'print', :media => 'print'
+    = csrf_meta_tag
+    = yield :head
     %title= page_title
-  = render :partial => 'layouts/body'
+  %body 
+    #container
+      #header
+        %h1.title
+          =link_to SiteConfig.site_name, root_path
+        %ul.reg_nav
+          - if current_user
+            %li= link_to 'my account', account_path
+            %li= link_to 'sign out', logout_path
+          - else
+            %li= link_to 'sign in', login_path
+            %li= link_to 'sign up', signup_path
+      #content
+        = flash_messages.html_safe
+        = yield :layout
+        %br.clear
+        .push
+    %footer
+      &copy; 2010 YOUR COMPANY NAME
+
   = default_javascript_includes.html_safe
   = blackbird_tags.html_safe
-  = render :partial => 'layouts/on_ready'
+  %script{ :type => 'text/javascript', :charset => 'utf-8' }
+    $(document).ready(function() {
+    - unless SiteConfig.google_tracker_id.blank?
+      PNB.load_gat('#{SiteConfig.google_tracker_id}')
+    = yield :on_ready
+    })
+  

@@ -67,7 +67,24 @@ module ApplicationHelper
   end
 
   def default_javascript_includes
-    javascript_include_tag(:jrails)
+    if Rails.env.eql?('production')
+      javascript_include_tag(
+        'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js',
+        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js',
+        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js',
+        'jquery.rails.js',
+        'application',
+        :cache => true
+      )
+    else
+      javascript_include_tag(
+        'jquery.min.js',
+        'jquery-ui.min.js',
+        'jquery-ui-i18n.min.js',
+        'jquery.rails.js',
+        'application'
+      )
+    end
   end
 
 end

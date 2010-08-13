@@ -45,9 +45,12 @@ puts "\n#{'*' * 80}\n"
 puts "Some information about your application, please"
 puts "#{'*' * 80}\n\n"
 app_name        = `pwd`.split('/').last.strip
-puts "Your app name is #{app_name}"
-db_user   = ask("MySQL username [root]:") || 'root'
-db_pw     = ask("MySQL password []:") || ''
+puts "Your app shortname is '#{app_name}'"
+app_fullname    = ask("Please enter the full name [#{app_name.capitalize}]:") || app_name.capitalize
+app_fullname    = app_fullname.blank? ? app_name.capitalize : app_fullname
+db_user   = ask("MySQL username [root]:")
+db_user   = db_user.blank? ? 'root' : db_user
+db_pw     = ask("MySQL password []:")
 puts "\n#{'*' * 80}\n\n"
 
 
@@ -62,13 +65,13 @@ git :add => "."
 git :commit => "-am 'Initial commit'"
 
 # install Gemfile and gems
-run 'rm Gemfile'
+#run 'rm Gemfile'
 
 file 'Gemfile', <<-EOGEMS
 source 'http://rubygems.org'
 source 'http://gems.github.com'
 
-gem 'rails', '>=3.0.0.beta4'
+gem 'rails', '>= 3.0.0.rc'
 gem 'authlogic'
 gem 'capistrano', '2.5.19'
 gem 'capistrano-ext', '1.2.1'
@@ -81,7 +84,7 @@ gem 'mongrel'
 gem 'mysql'
 gem 'factory_girl_rails'
 gem 'test-unit', '>=2.0.9'
-gem 'will_paginate', '>=2.3.14'
+gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :branch => 'rails3'
 #{"gem 'paperclip'" if want_paperclip}
 #{"gem 'puret', :git => 'git://github.com/jo/puret.git'" if want_puret}
 #{"gem 'simply_stored'" if want_couchdb}
@@ -165,7 +168,7 @@ production: http://db.server/#{app_name}
 EOF
   initializer 'simply_stored.rb', <<-EOF
 require 'simply_stored/couch'  
-#CouchPotato::Config.database_name = '#{app_name}'
+CouchPotato::Config.database_name = '#{app_name}'
 EOF
 end
 
@@ -208,8 +211,29 @@ git :commit => "-am 'Added Cucumber'"
 
 # 
 # SiteConfig
-file 'config/site.yml', open("#{SOURCE}/config/site.yml").read
-lib 'site_config.rb', open("#{SOURCE}/lib/site_config.rb").read
+file 'config/site.yml', <<-EOF
+defaults:
+  site_url: http://localhost:3000/
+  host_name: #{app_name}.com
+  mail_from: noreply@#{app_name}.com
+  site_name: #{app_fullname}
+  admin_email: admin@#{app_name}.com
+  blackbird: true
+  # set this to automatically include the GA code in the footer, though you
+  # probably only want to set it for production
+  google_tracker_id:
+
+production:
+  site_url: http://#{app_name}.com
+  blackbird: false
+
+test:
+  blackbird: false
+
+EOF
+
+#lib 'site_config.rb', open("#{SOURCE}/lib/site_config.rb").read
+initializer 'site_config.rb', open("#{SOURCE}/lib/site_config.rb").read
 git :add => "."
 git :commit => "-am 'Added SiteConfig'"
 
@@ -259,16 +283,16 @@ git :commit => "-am 'Added Haml and Sass stylesheets'"
 
 
 # jRails
-plugin 'jrails', :git => 'git://github.com/jeanmartin/jrails.git'
-gen 'jrails'
-rake('jrails:js:scrub')
-
-initializer 'jrails.rb', <<-EOF
-ActionView::Helpers::PrototypeHelper::DISABLE_JQUERY_FORGERY_PROTECTION = true
-EOF
-
-git :add => "."
-git :commit => "-am 'Added jRails plugin'"
+#plugin 'jrails', :git => 'git://github.com/jeanmartin/jrails.git'
+#gen 'jrails'
+#rake('jrails:js:scrub')
+#
+#initializer 'jrails.rb', <<-EOF
+#ActionView::Helpers::PrototypeHelper::DISABLE_JQUERY_FORGERY_PROTECTION = true
+#EOF
+#
+#git :add => "."
+#git :commit => "-am 'Added jRails plugin'"
 
 
 # Bootstrapper
@@ -295,11 +319,18 @@ git :commit => "-am 'Added Bootstrapper plugin'"
 
 
 # additional js files
+{
+  'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js' => 'jquery.min.js',
+  'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js' => 'jquery-ui.min.js',
+  'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js' => 'jquery-ui-i18n.min.js',
+  'http://github.com/rails/jquery-ujs/raw/master/src/rails.js' => 'jquery.rails.js',
+  "#{SOURCE}/public/javascripts/application.js" => 'application.js'
+}.each_pair do |src,dst|
+  file "public/javascripts/#{dst}", open(src).read
+end
 
-file 'public/javascripts/jquery.form.js',
-  open('http://github.com/malsup/form/raw/master/jquery.form.js').read
-file 'public/javascripts/application.js',
-  open("#{SOURCE}/public/javascripts/application.js").read
+# file 'public/javascripts/jquery.form.js',
+#   open('http://github.com/malsup/form/raw/master/jquery.form.js').read
 
 git :add => "."
 git :commit => "-am 'Added jQuery form plugin and custom application.js'"
@@ -555,10 +586,7 @@ git :commit => "-am 'Added ApplicationHelper'"
 # Add Layout
 %w(
   application.html.haml
-  _body.html.haml
-  _common_headers.html.haml
-  _footer.html.haml
-  _on_ready.html.haml
+  admin.html.haml
 ).each do |name|
   file "app/views/layouts/#{name}",
     open("#{SOURCE}/app/views/layouts/#{name}").read
@@ -577,8 +605,6 @@ git :commit => "-am 'Added Layout and templates'"
   run "mkdir -p #{dir}"
 end
 
-file "app/views/layouts/admin.html.haml",
-  open("#{SOURCE}/app/views/layouts/admin.html.haml").read
 file "app/views/admin/base/index.html.haml",
   open("#{SOURCE}/app/views/admin/base/index.html.haml").read
 file "app/controllers/admin/base_controller.rb",
