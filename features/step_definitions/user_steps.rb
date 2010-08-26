@@ -43,12 +43,12 @@ When /^I fill in and submit the forgot password form with an invalid email$/ do
 end
 
 When /^I fill in and submit the new password form$/ do
-  fill_in('password', :with => 'my_new_password')
+  fill_in('user_password', :with => 'my_new_password')
   click_button('Update')
 end
 
 When /^I fill in and submit the new password form with "([^\"]*)"$/ do |pass|
-  fill_in('password', :with => pass)
+  fill_in('user_password', :with => pass)
   click_button('Update')
 end
 
@@ -89,6 +89,7 @@ When /^I fill in and submit the signup form with valid info$/ do
      And I fill in "user[login]" with "scooby"
      And I fill in "user[email]" with "scooby@example.com"
      And I fill in "user[password]" with "password"
+     And I fill in "user[password_confirmation]" with "password"
      And I press "Register"
   }
 end
@@ -99,13 +100,14 @@ When /^I fill in and submit the signup form with "([^\"]*)" of "([^\"]*)"$/ do |
      And I fill in "user[login]" with "scooby"
      And I fill in "user[email]" with "scooby@example.com"
      And I fill in "user[password]" with "password"
+     And I fill in "user[password_confirmation]" with "password"
      And I fill in "user[#{name}]" with "#{value}"
      And I press "Register"
   }
 end
 
 Then /^I follow an invalid password reset link$/ do
-  link = links_in_email(current_email).first.gsub(%r{/password_reset/(.*?)/edit}, '/password_reset/bad_token/edit')
+  link = links_in_email(current_email).first.gsub(%r{/password_resets/(.*?)/edit}, '/password_resets/bad_token/edit')
   request_uri = URI::parse(link).request_uri
   visit request_uri
 end

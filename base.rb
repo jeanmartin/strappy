@@ -71,17 +71,21 @@ file 'Gemfile', <<-EOGEMS
 source 'http://rubygems.org'
 source 'http://gems.github.com'
 
-gem 'rails', '>= 3.0.0.rc'
-gem 'authlogic'
+gem 'rails', '>= 3.0.0.rc2'
+gem 'authlogic', :git => 'git://github.com/rballast/authlogic.git', :branch => 'rails3'
 gem 'capistrano', '2.5.19'
 gem 'capistrano-ext', '1.2.1'
-gem 'config_reader', '>=0.0.7'
+gem 'config_reader', :git => 'git://github.com/jeanmartin/config_reader-gem.git'
 gem 'friendly_id', '>=3.0.6'
 gem "formtastic", :git => "git://github.com/justinfrench/formtastic.git", :branch => "rails3"
+gem 'compass', '>= 0.10.4'
+gem 'html5-boilerplate'
 gem 'haml', '>=3.0.13'
 gem 'hoe', '>=2.6.1'
 gem 'mongrel'
 gem 'mysql'
+gem 'mysql2'
+gem 'hpricot'
 gem 'factory_girl_rails'
 gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :branch => 'rails3'
@@ -91,6 +95,7 @@ gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :bran
 #{"gem 'activemerchant', :git => 'git://github.com/Shopify/active_merchant.git'" if want_am}
 
 group :test do
+  gem 'email_spec'
   gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
@@ -282,19 +287,6 @@ git :add => "."
 git :commit => "-am 'Added Haml and Sass stylesheets'"
 
 
-# jRails
-#plugin 'jrails', :git => 'git://github.com/jeanmartin/jrails.git'
-#gen 'jrails'
-#rake('jrails:js:scrub')
-#
-#initializer 'jrails.rb', <<-EOF
-#ActionView::Helpers::PrototypeHelper::DISABLE_JQUERY_FORGERY_PROTECTION = true
-#EOF
-#
-#git :add => "."
-#git :commit => "-am 'Added jRails plugin'"
-
-
 # Bootstrapper
 
 plugin 'bootstrapper', :git => 'git://github.com/jeanmartin/bootstrapper.git'
@@ -328,9 +320,6 @@ git :commit => "-am 'Added Bootstrapper plugin'"
 }.each_pair do |src,dst|
   file "public/javascripts/#{dst}", open(src).read
 end
-
-# file 'public/javascripts/jquery.form.js',
-#   open('http://github.com/malsup/form/raw/master/jquery.form.js').read
 
 git :add => "."
 git :commit => "-am 'Added jQuery form plugin and custom application.js'"
@@ -517,6 +506,29 @@ file_inject('spec/spec_helper.rb',
 )
 
 
+# install email spec
+file 'features/support/setup.rb', <<-EOF
+require 'email_spec/cucumber'
+EOF
+gen 'email_spec:steps'
+file_str_replace('features/step_definitions/email_steps.rb',
+  'last_email_address || "example@example.com"',
+  "last_email_address || @user.try(:email) || @current_user.try(:email) || 'example@example.com'")
+
+file_inject('spec/spec_helper.rb',
+  "require 'rspec/rails'",
+  "require 'email_spec'
+
+Spec::Runner.configure do |config|
+  config.include(EmailSpec::Helpers)
+  config.include(EmailSpec::Matchers)
+end",
+  :after)
+
+git :add => "."
+git :commit => "-am 'added email spec'"
+
+
 # factories
 run 'mkdir -p spec/factories'
 %w( users ).each do |name|
@@ -583,19 +595,22 @@ file 'app/helpers/application_helper.rb',
 git :add => "."
 git :commit => "-am 'Added ApplicationHelper'"
 
-# Add Layout
-%w(
-  application.html.haml
-  admin.html.haml
-).each do |name|
-  file "app/views/layouts/#{name}",
-    open("#{SOURCE}/app/views/layouts/#{name}").read
-end
 
+# use compass to bootstrap the html5 boilerplate
+run 'compass init rails -r html5-boilerplate -u html5-boilerplate --sass-dir public/stylesheets/sass/ --css-dir public/stylesheets/ --force -q'
+file 'app/views/layouts/_header.html.haml',
+  open("#{SOURCE}/app/views/layouts/_header.html.haml").read
 git :add => "."
-git :commit => "-am 'Added Layout and templates'"
+git :commit => "-am 'Added HTML5 Layout and templates'"
 
 # setup admin section
+run "cp app/views/layouts/application.html.haml app/views/layouts/admin.html.haml"
+file_str_replace('app/views/layouts/admin.html.haml',
+  "= render :partial => 'layouts/header'",
+  "= render :partial => 'layouts/admin_header'")
+file 'app/views/layouts/_admin_header.html.haml',
+  open("#{SOURCE}/app/views/layouts/_admin_header.html.haml").read
+
 %w(
   app/controllers/admin
   app/views/admin/base
@@ -642,13 +657,6 @@ file 'app/controllers/application_controller.rb',
 
 git :add => "."
 git :commit => "-am 'Added ApplicationController'"
-
-# Application Layout
-file 'app/views/layouts/application.html.haml',
-  open("#{SOURCE}/app/views/layouts/application.html.haml").read
-
-git :add => "."
-git :commit => "-am 'Added Layout'"
 
 # update the readme
 run 'rm README'

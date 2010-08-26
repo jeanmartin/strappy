@@ -4,7 +4,7 @@
 class ApplicationController < ActionController::Base
   helper :all
 
-  helper_method :current_user_session, :current_user, :page_title,
+  helper_method :logged_in?, :current_user_session, :current_user, :page_title,
     :set_page_title
 
   before_filter :blackbird_override, :activate_authlogic
@@ -28,6 +28,11 @@ class ApplicationController < ActionController::Base
     end
 
   private
+
+    def logged_in?
+      !!current_user
+    end
+
     def current_user_session
       @current_user_session ||= UserSession.find
     end

@@ -6,6 +6,7 @@ User.blueprint do
   email { Faker::Internet.email }
   admin { false }
   password { 'password' }
+  password_confirmation { 'password' }
 end
 
 User.blueprint(:admin) do

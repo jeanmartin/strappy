@@ -63,7 +63,6 @@ Feature: As an end user
      Then I should see "Password successfully updated"
 
   Scenario: Requesting a password reset and resetting password with an invalid password
-    Given this is pending
     Given a user
      When I am on the forgot password page
       And I fill in and submit the forgot password form

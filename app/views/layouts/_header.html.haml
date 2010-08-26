@@ -1,0 +1,9 @@
+%h1= link_to SiteConfig.site_name, root_path
+%nav
+  %ul
+    - if logged_in?
+      %li= link_to 'my account', account_path
+      %li= link_to 'sign out', logout_path
+    - else
+      %li= link_to 'sign in', login_path
+      %li= link_to 'sign up', signup_path
