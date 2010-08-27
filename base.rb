@@ -87,6 +87,8 @@ gem 'mysql'
 gem 'mysql2'
 gem 'hpricot'
 gem 'factory_girl_rails'
+gem 'spork'
+gem 'rspec-rails', '>= 2.0.0.beta.1'
 gem 'test-unit', '>=2.0.9'
 gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :branch => 'rails3'
 #{"gem 'paperclip'" if want_paperclip}
@@ -105,24 +107,16 @@ group :test do
   gem 'launchy'
   gem 'pickle'
   gem 'rcov'
+  gem 'webrat'
   gem 'rspec-rails', '>= 2.0.0.beta.1'
+  gem 'ZenTest'
+  gem 'autotest-growl'
 end
 EOGEMS
 
 run 'bundle install'
 git :add => "."
 git :commit => "-am 'Add Gemfile, install gems'"
-
-
-# install machinist
-gen 'machinist:install'
-file_inject('config/application.rb',
-  '# Configure generators values. Many other options are available, be sure to check the documentation.',
-  "
-    config.generators do |g|
-      g.fixture_replacement   :machinist
-    end",
-  :after)
 
 
 # database config
@@ -206,6 +200,21 @@ gen 'rspec:install'
 file_append('spec/spec_helper.rb', open("#{SOURCE}/spec/helpers.rb").read)
 git :add => "."
 git :commit => "-am 'Added RSpec'"
+
+
+# install machinist
+gen 'machinist:install'
+file_inject('config/application.rb',
+  '# Configure generators values. Many other options are available, be sure to check the documentation.',
+  "
+    config.generators do |g|
+      g.fixture_replacement   :machinist
+    end",
+  :after)
+
+git :add => "."
+git :commit => "-am 'Added machinist'"
+
 
 # Cucumber
 gen 'cucumber:install --rspec --capybara'
@@ -407,11 +416,6 @@ file 'app/models/user_session.rb', <<-EOF
 class UserSession < Authlogic::Session::Base
   find_by_login_method :find_by_login_or_email
 
-  # From here: http://github.com/binarylogic/authlogic/issues/issue/101/#comment_142986 
-  def to_key
-    new_record? ? nil : [ self.send(self.class.primary_key) ] 
-  end
-
 end
 EOF
 
@@ -430,6 +434,8 @@ gen 'scaffold user'
 Dir.glob('app/views/users/*.erb').each do |file|
   run "rm #{file}"
 end
+# and the route specs (they are flawed)
+run 'rm spec/routing/users_routing_spec.rb'
 
 gen 'controller password_resets'
 
@@ -518,11 +524,15 @@ file_str_replace('features/step_definitions/email_steps.rb',
 file_inject('spec/spec_helper.rb',
   "require 'rspec/rails'",
   "require 'email_spec'
+require 'authlogic/test_case'
 
-Spec::Runner.configure do |config|
-  config.include(EmailSpec::Helpers)
+include Authlogic::TestCase",
+  :after)
+file_inject('spec/spec_helper.rb',
+  'RSpec.configure do |config|',
+  '  config.include(EmailSpec::Helpers)
   config.include(EmailSpec::Matchers)
-end",
+  ',
   :after)
 
 git :add => "."
@@ -534,24 +544,6 @@ run 'mkdir -p spec/factories'
 %w( users ).each do |name|
   file "spec/factories/#{name}.rb", open("#{SOURCE}/spec/factories/#{name}.rb").read
 end
-
-
-# specs
-run 'mkdir -p spec/fixtures'
-
-%w(
-  fixtures/users.yml
-  helpers/application_helper_spec.rb
-  controllers/password_resets_controller_spec.rb
-  controllers/user_sessions_controller_spec.rb
-  controllers/users_controller_spec.rb
-  models/user_spec.rb
-  views/home/index.html.haml_spec.rb
-).each do |name|
-  file "spec/#{name}", open("#{SOURCE}/spec/#{name}").read
-end
-git :add => "."
-git :commit => "-am 'Added specs'"
 
 # features
 %w(
@@ -642,9 +634,6 @@ file 'app/views/home/index.html.haml',
 file "app/helpers/home_helper.rb",
   open("#{SOURCE}/app/helpers/home_helper.rb").read
 
-file "spec/views/home/index.html.haml_spec.rb",
-  open("#{SOURCE}/spec/views/home/index.html.haml_spec.rb").read
-
 file "spec/controllers/home_controller_spec.rb",
   open("#{SOURCE}/spec/controllers/home_controller_spec.rb").read
 
@@ -679,6 +668,43 @@ end
 git :add => "."
 git :commit => "-am 'Added Action images'"
 
+
+# specs
+
+run 'mkdir -p spec/fixtures'
+# clear helper specs
+inside('spec/helpers') do
+  run 'rm -rf *'
+end
+# clear view specs
+inside('spec/views') do
+  run 'rm -rf *'
+end
+# clear request specs
+inside('spec/requests') do
+  run 'rm -rf *'
+end
+run 'rm spec/models/user_session_spec.rb'
+%w(
+  fixtures/users.yml
+  helpers/application_helper_spec.rb
+  controllers/password_resets_controller_spec.rb
+  controllers/user_sessions_controller_spec.rb
+  controllers/users_controller_spec.rb
+  models/user_spec.rb
+).each do |name|
+  file "spec/#{name}", open("#{SOURCE}/spec/#{name}").read
+end
+git :add => "."
+git :commit => "-am 'Added specs'"
+
+
+# init spork
+run 'spork --bootstrap'
+git :add => "."
+git :commit => "-am 'Bootstrapped spork'"
+
+
 # cleanup gend tests
 run 'rm -rf test'
 git :add => "."
@@ -686,6 +712,30 @@ git :commit => "-am 'removed gend tests'"
 
 rake 'db:bootstrap'
 
+puts "\n#{'*' * 80}\n\n"
+puts "Final Notes:"
+puts "\n#{'*' * 80}\n\n"
+puts "If you want to use autotest call:"
+puts "#> bundle exec autotest"
+puts "(or to enable cucumber:)"
+puts "#> AUTOFEATURE=true bundle exec autotest"
+puts
+puts "I recommend the following ~/.autotest file (at least on OS X):"
+puts "require 'autotest/growl'
+
+Autotest::Growl::image_dir = 'ampelmaennchen'
+Autotest::Growl::clear_terminal = false
+
+Autotest.add_hook(:initialize) {|at|
+  %w{.DS_store db log rerun.txt}.each { |e| at.add_exception(e) }
+  at.add_exception %r{^\.git}  # ignore Version Control System
+  at.add_exception %r{^./tmp}  # ignore temp files, lest autotest will run again, and again...
+  #at.clear_mappings         # take out the default (test/test*rb)
+  at.add_mapping(%r{^lib/.*\.rb$}) {|f, _|
+    Dir['spec/**/*.rb']
+  }
+  nil
+}"
 puts "\n#{'*' * 80}\n\n"
 puts "All done. Enjoy."
 puts "\n#{'*' * 80}\n\n"

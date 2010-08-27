@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe PasswordResetController do
+describe PasswordResetsController do
   fixtures :users
 
   before do
@@ -9,7 +9,6 @@ describe PasswordResetController do
 
   describe "requesting a password reset" do
     it "should send an email to the user if found" do
-      Notifier.stub!(:password_reset_instructions).and_return(nil)
       post :create, :email => 'michael@pixels-and-bits.com'
       users(:mmoen).perishable_token.should_not eql('')
       response.should redirect_to(root_url)

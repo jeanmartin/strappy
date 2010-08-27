@@ -6,8 +6,8 @@ describe ApplicationHelper do
 
   it "should render the delete_img when passed a valid object" do
     res = delete_img(User.first, '/users/destroy/1')
-    res.should =~ /_method=delete/
-    res.should =~ /url:'\/users\/destroy\/1'/
+    res.should =~ /data\-method=\"delete\"/
+    res.should =~ /href=\"\/users\/destroy\/1\"/
   end
 
   it "should not render the delete_img when passed an invalid object" do

@@ -31,14 +31,13 @@ module ApplicationHelper
   end
 
   def delete_img(obj, path)
-    link_to_remote(image_tag('delete.png',
+    link_to(image_tag('delete.png',
         :title => "Delete this #{obj.class}",
         :class => 'action'
-      ), {
-        :url => path,
+      ), path,
+        :remote => true,
         :method => :delete,
         :confirm => "This happens immediately.\nAre you sure you want to delete it?"
-      }
     ) unless obj.id.blank?
   end
 
