@@ -34,6 +34,6 @@ describe ApplicationHelper do
 
   it "should render a drag image" do
     res = drag_img
-    res.should =~ /\/images\/arrow_up_down.png/
+    res.should =~ /\/images\/icons\/arrow_up_down.png/
   end
 end

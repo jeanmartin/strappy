@@ -2,7 +2,7 @@
 SOURCE=ENV['SOURCE'] || 'http://github.com/jeanmartin/strappy/raw/master'
 
 def gen(what)
-  run "./script/rails g #{what}"
+  generate what
 end
 
 def file_append(file, data)
@@ -39,6 +39,7 @@ want_paperclip  = yes?("Do you want file uploads (using paperclip)?")
 want_ssl        = yes?("Do you want SSL (ssl_requirement plugin)?")
 want_am         = yes?("Do you want online payment (using active_merchant)?")
 want_couchdb    = yes?("Do you want to use CouchDB (using simply_stored)?")
+want_jspec      = yes?("Do you want JavaScript tests (using JSpec)?")
 puts "\n#{'*' * 80}\n\n"
 
 puts "\n#{'*' * 80}\n"
@@ -59,14 +60,17 @@ puts "\n#{'*' * 80}\n\n"
 file_append '.gitignore', open("#{SOURCE}/gitignore").read
 git :init
 git :add => '.gitignore'
+
+# ujs will be replaced with the jquery version later
+run 'rm -f public/javascripts/rails.js'
 run 'rm -f public/images/rails.png'
 run 'cp config/database.yml config/database.template.yml'
 git :add => "."
 git :commit => "-am 'Initial commit'"
 
-# install Gemfile and gems
-#run 'rm Gemfile'
 
+# install Gemfile and gems
+run 'rm Gemfile'
 file 'Gemfile', <<-EOGEMS
 source 'http://rubygems.org'
 source 'http://gems.github.com'
@@ -84,7 +88,6 @@ gem 'html5-boilerplate'
 gem 'haml', '>=3.0.18'
 gem 'hoe', '>=2.6.1'
 gem 'mongrel'
-#gem 'mysql'
 gem 'mysql2'
 gem 'hpricot'
 gem 'factory_girl_rails'
@@ -102,7 +105,7 @@ group :test do
   gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
-  gem 'database_cleaner'
+  gem 'database_cleaner', :git => 'git://github.com/bmabey/database_cleaner.git'
   gem 'machinist', '>= 2.0.0.beta2'
   gem 'faker'
   gem 'launchy'
@@ -112,6 +115,7 @@ group :test do
   gem 'rspec-rails', '>= 2.0.0.beta.20'
   gem 'ZenTest'
   gem 'autotest-growl'
+  #{"gem 'jspec'" if want_jspec}
 end
 EOGEMS
 
@@ -124,7 +128,7 @@ git :commit => "-am 'Add Gemfile, install gems'"
 file 'config/database.yml', 
 %Q{
 development:
-  adapter: mysql
+  adapter: mysql2
   database: #{app_name}_development
   username: #{db_user}
   password: #{db_pw}
@@ -132,7 +136,7 @@ development:
   encoding: utf8
  
 test:
-  adapter: mysql
+  adapter: mysql2
   database: #{app_name}_test
   username: #{db_user}
   password: #{db_pw}
@@ -140,7 +144,7 @@ test:
   encoding: utf8
  
 staging:
-  adapter: mysql
+  adapter: mysql2
   database: #{app_name}_staging
   username: #{app_name}
   password:
@@ -149,7 +153,7 @@ staging:
   socket: /var/lib/mysql/mysql.sock
  
 production:
-  adapter: mysql
+  adapter: mysql2
   database: #{app_name}
   username: #{app_name}
   password:
@@ -161,6 +165,12 @@ production:
 
 # install jquery-rails
 gen 'jquery:install --ui'
+git :add => '.'
+git :commit => "-am 'Installed jQuery files'"
+
+
+# JSpec
+run 'jspec init --rails' if want_jspec
 
 
 # simply_stored
@@ -188,8 +198,12 @@ plugin 'core_extensions',
 git :add => "."
 git :commit => "-am 'Added Core Extensions'"
 
+
 # install strappy rake tasks
 rakefile 'strappy.rake', open("#{SOURCE}/lib/tasks/strappy.rake").read
+git :add => "."
+git :commit => "-am 'Added strappy rake file'"
+
 
 # RSpec
 gen 'rspec:install'
@@ -575,34 +589,35 @@ file 'public/javascripts/jquery-ui-i18n.min.js', open('http://ajax.googleapis.co
 
 # include jquery ui
 file_inject('app/views/layouts/_javascripts.html.haml',
-  'google.load("jquery", "1.4.2");',
-  'google.load("jqueryui", "1.8.4");',
+ 'google.load("jquery", "1.4.2");',
+ '    google.load("jqueryui", "1.8.4");',
   :after
 )
-file_replace('app/views/layouts/_javascripts.html.haml',
+file_str_replace('app/views/layouts/_javascripts.html.haml',
   '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"',
   '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js"'
 )
 # include blackbird
 file_inject('app/views/layouts/_javascripts.html.haml',
   '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.2.min") }\')',
-  "\n= blackbird_tags",
+  "\n= blackbird_tags.html_safe",
   :after
 )
-file_replace('app/views/layouts/_javascripts.html.haml',
+file_str_replace('app/views/layouts/_javascripts.html.haml',
   '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.2.min") }\')',
   '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery.min", "jquery-ui.min", "jquery-ui-i18n.min", :cache => "jquery_all") }\')'
 )
-file_replace('app/views/layouts/_javascripts.html.haml',
+file_str_replace('app/views/layouts/_javascripts.html.haml',
   "= javascript_include_tag 'rails', 'plugins', 'application'",
   "= javascript_include_tag 'rails', 'plugins', 'application', :cache => 'all'"
 )
-file_replace('app/views/layouts/_javascripts.html.haml',
-  "= javascript_include_tag 'profiling/yahoo-profiling.min', 'profiling/config'",
-  "= javascript_include_tag 'profiling/yahoo-profiling.min', 'profiling/config', :cache => 'profiling/all'"
-)
+# remove yui profiler and profileviewer
+run 'rm -rf public/javascripts/profiling'
+file_str_replace('app/views/layouts/_javascripts.html.haml', "-# yui profiler and profileviewer", '')
+file_str_replace('app/views/layouts/_javascripts.html.haml', "- if Rails.env == 'development'", '')
+file_str_replace('app/views/layouts/_javascripts.html.haml', "  = javascript_include_tag 'profiling/yahoo-profiling.min', 'profiling/config'", '')
 # don't overwrite blackbirds log function
-file_replace('public/javascripts/plugins.js',
+file_str_replace('public/javascripts/plugins.js',
   'window.log = function(){',
   'window.clog = function(){'
 )
@@ -676,8 +691,8 @@ git :commit => "-am 'Replaced README'"
   pencil.png
   user_edit.png
 ).each do |name|
-  file "public/images/#{name}",
-    open("#{SOURCE}/public/images/#{name}").read
+  file "public/images/icons/#{name}",
+    open("#{SOURCE}/public/images/icons/#{name}").read
 end
 
 git :add => "."
