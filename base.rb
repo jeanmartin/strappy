@@ -72,7 +72,7 @@ source 'http://rubygems.org'
 source 'http://gems.github.com'
 
 gem 'rails', '>= 3.0.0'
-gem 'authlogic', :git => 'git://github.com/rballast/authlogic.git', :branch => 'rails3'
+gem 'authlogic', :git => 'http://github.com/ochko/authlogic.git'
 gem 'capistrano', '2.5.19'
 gem 'capistrano-ext', '1.2.1'
 gem 'config_reader', :git => 'git://github.com/jeanmartin/config_reader-gem.git'
