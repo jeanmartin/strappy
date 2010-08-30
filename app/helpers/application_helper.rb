@@ -1,13 +1,5 @@
 module ApplicationHelper
 
-  # dirty ugly hack to get rcov to see this
-  def html_attrs(lang = 'en-US'); {:xmlns => "http://www.w3.org/1999/xhtml", 'xml:lang' => lang, :lang => lang}
-  end
-
-  def http_equiv_attrs
-    {'http-equiv' => 'Content-Type', :content => 'text/html;charset=UTF-8'}
-  end
-
   # Outputs the corresponding flash message if any are set
   def flash_messages
     messages = []
@@ -31,7 +23,7 @@ module ApplicationHelper
   end
 
   def delete_img(obj, path)
-    link_to(image_tag('delete.png',
+    link_to(image_tag('icons/delete.png',
         :title => "Delete this #{obj.class}",
         :class => 'action'
       ), path,
@@ -42,7 +34,7 @@ module ApplicationHelper
   end
 
   def edit_img(obj, path)
-    link_to(image_tag('pencil.png',
+    link_to(image_tag('icons/pencil.png',
         :title => "Edit this #{obj.class}",
         :class => 'action'
       ),
@@ -51,7 +43,7 @@ module ApplicationHelper
   end
 
   def drag_img
-    image_tag 'arrow_up_down.png', :class => 'action drag', :title => 'Drag to reorder'
+    image_tag 'icons/arrow_up_down.png', :class => 'action drag', :title => 'Drag to reorder'
   end
 
   def sortable(parent, handle='', axis='y', containment='')
@@ -65,25 +57,8 @@ module ApplicationHelper
     EOC
   end
 
-  def default_javascript_includes
-    if Rails.env.eql?('production')
-      javascript_include_tag(
-        'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js',
-        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js',
-        'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js',
-        'jquery.rails.js',
-        'application',
-        :cache => true
-      )
-    else
-      javascript_include_tag(
-        'jquery.min.js',
-        'jquery-ui.min.js',
-        'jquery-ui-i18n.min.js',
-        'jquery.rails.js',
-        'application'
-      )
-    end
+  def google_account_id
+    SiteConfig.google_tracker_id
   end
 
 end

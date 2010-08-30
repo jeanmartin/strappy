@@ -71,25 +71,26 @@ file 'Gemfile', <<-EOGEMS
 source 'http://rubygems.org'
 source 'http://gems.github.com'
 
-gem 'rails', '>= 3.0.0.rc2'
+gem 'rails', '>= 3.0.0'
 gem 'authlogic', :git => 'git://github.com/rballast/authlogic.git', :branch => 'rails3'
 gem 'capistrano', '2.5.19'
 gem 'capistrano-ext', '1.2.1'
 gem 'config_reader', :git => 'git://github.com/jeanmartin/config_reader-gem.git'
-gem 'friendly_id', '>=3.0.6'
+gem 'friendly_id', '>=3.1.3'
 gem "formtastic", :git => "git://github.com/justinfrench/formtastic.git", :branch => "rails3"
-gem 'compass', '>= 0.10.4'
+gem 'jquery-rails'
+gem 'compass', '>= 0.10.5'
 gem 'html5-boilerplate'
-gem 'haml', '>=3.0.13'
+gem 'haml', '>=3.0.18'
 gem 'hoe', '>=2.6.1'
 gem 'mongrel'
-gem 'mysql'
+#gem 'mysql'
 gem 'mysql2'
 gem 'hpricot'
 gem 'factory_girl_rails'
 gem 'spork'
-gem 'rspec-rails', '>= 2.0.0.beta.1'
-gem 'test-unit', '>=2.0.9'
+gem 'rspec-rails', '>= 2.0.0.beta.20'
+gem 'test-unit', '>=2.1.1'
 gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :branch => 'rails3'
 #{"gem 'paperclip'" if want_paperclip}
 #{"gem 'puret', :git => 'git://github.com/jo/puret.git'" if want_puret}
@@ -102,13 +103,13 @@ group :test do
   gem 'cucumber'
   gem 'cucumber-rails'
   gem 'database_cleaner'
-  gem 'machinist', '>= 2.0.0.beta1'
+  gem 'machinist', '>= 2.0.0.beta2'
   gem 'faker'
   gem 'launchy'
   gem 'pickle'
   gem 'rcov'
   gem 'webrat'
-  gem 'rspec-rails', '>= 2.0.0.beta.1'
+  gem 'rspec-rails', '>= 2.0.0.beta.20'
   gem 'ZenTest'
   gem 'autotest-growl'
 end
@@ -158,6 +159,10 @@ production:
 }
 
 
+# install jquery-rails
+gen 'jquery:install --ui'
+
+
 # simply_stored
 if want_couchdb
   file 'config/couchdb.yml', <<-EOF
@@ -185,14 +190,6 @@ git :commit => "-am 'Added Core Extensions'"
 
 # install strappy rake tasks
 rakefile 'strappy.rake', open("#{SOURCE}/lib/tasks/strappy.rake").read
-
-# # install haml rake tasks
-# rakefile 'haml.rake', open("#{SOURCE}/lib/tasks/haml.rake").read
-# 
-
-# 
-# # install rcov rake tasks
-# rakefile 'rcov.rake', open("#{SOURCE}/lib/tasks/rcov.rake").read
 
 # RSpec
 gen 'rspec:install'
@@ -277,21 +274,6 @@ git :commit => "-am 'Added Capistrano config'"
 
 run 'echo N\n | haml --rails .'
 run 'mkdir -p public/stylesheets/sass'
-%w(
-  application
-  print
-  _colors
-  _common
-  _flash
-  _forms
-  _grid
-  _helpers
-  _reset
-  _typography
-).each do |file|
-  file "public/stylesheets/sass/#{file}.sass",
-    open("#{SOURCE}/public/stylesheets/sass/#{file}.sass").read
-end
 git :add => "."
 git :commit => "-am 'Added Haml and Sass stylesheets'"
 
@@ -318,20 +300,6 @@ EOF
 git :add => "."
 git :commit => "-am 'Added Bootstrapper plugin'"
 
-
-# additional js files
-{
-  'http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js' => 'jquery.min.js',
-  'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js' => 'jquery-ui.min.js',
-  'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js' => 'jquery-ui-i18n.min.js',
-  'http://github.com/rails/jquery-ujs/raw/master/src/rails.js' => 'jquery.rails.js',
-  "#{SOURCE}/public/javascripts/application.js" => 'application.js'
-}.each_pair do |src,dst|
-  file "public/javascripts/#{dst}", open(src).read
-end
-
-git :add => "."
-git :commit => "-am 'Added jQuery form plugin and custom application.js'"
 
 # Blackbird
 run 'mkdir -p public/blackbird'
@@ -594,6 +562,53 @@ file 'app/views/layouts/_header.html.haml',
   open("#{SOURCE}/app/views/layouts/_header.html.haml").read
 git :add => "."
 git :commit => "-am 'Added HTML5 Layout and templates'"
+
+
+# patch javascript(-includes)
+
+# remove jquery-1.4.2.min.js since we already got jquery.min.js
+run 'rm public/javascripts/jquery-1.4.2.min.js'
+
+# add i18n & application js file(s)
+file "public/javascripts/application.js", open("#{SOURCE}/public/javascripts/application.js").read
+file 'public/javascripts/jquery-ui-i18n.min.js', open('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js').read
+
+# include jquery ui
+file_inject('app/views/layouts/_javascripts.html.haml',
+  'google.load("jquery", "1.4.2");',
+  'google.load("jqueryui", "1.8.4");',
+  :after
+)
+file_replace('app/views/layouts/_javascripts.html.haml',
+  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"',
+  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js"'
+)
+# include blackbird
+file_inject('app/views/layouts/_javascripts.html.haml',
+  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.2.min") }\')',
+  "\n= blackbird_tags",
+  :after
+)
+file_replace('app/views/layouts/_javascripts.html.haml',
+  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.2.min") }\')',
+  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery.min", "jquery-ui.min", "jquery-ui-i18n.min", :cache => "jquery_all") }\')'
+)
+file_replace('app/views/layouts/_javascripts.html.haml',
+  "= javascript_include_tag 'rails', 'plugins', 'application'",
+  "= javascript_include_tag 'rails', 'plugins', 'application', :cache => 'all'"
+)
+file_replace('app/views/layouts/_javascripts.html.haml',
+  "= javascript_include_tag 'profiling/yahoo-profiling.min', 'profiling/config'",
+  "= javascript_include_tag 'profiling/yahoo-profiling.min', 'profiling/config', :cache => 'profiling/all'"
+)
+# don't overwrite blackbirds log function
+file_replace('public/javascripts/plugins.js',
+  'window.log = function(){',
+  'window.clog = function(){'
+)
+git :add => "."
+git :commit => "-am 'Added custom js and js patches'"
+
 
 # setup admin section
 run "cp app/views/layouts/application.html.haml app/views/layouts/admin.html.haml"
