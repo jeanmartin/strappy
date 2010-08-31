@@ -586,6 +586,11 @@ run 'rm public/javascripts/jquery-1.4.2.min.js'
 file "public/javascripts/application.js", open("#{SOURCE}/public/javascripts/application.js").read
 file 'public/javascripts/jquery-ui-i18n.min.js', open('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/i18n/jquery-ui-i18n.min.js').read
 
+# include formtastic stylesheets
+file_str_replace('app/views/layouts/_stylesheets.html.haml',
+  "= stylesheet_link_tag 'style', :media => 'all'",
+  "= stylesheet_link_tag 'style', 'formtastic', :media => 'all', :cache => 'all'"
+)
 # include jquery ui
 file_inject('app/views/layouts/_javascripts.html.haml',
  'google.load("jquery", "1.4.2");',
