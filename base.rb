@@ -33,6 +33,7 @@ end
 puts "\n#{'*' * 80}\n"
 puts "Please answer the following questions with either yes [y] or no [n]"
 puts "#{'*' * 80}\n\n"
+want_newrelic   = yes?("Do you want New Relic?")
 want_geocoding  = yes?("Do you want geocoding (using geocoder)?")
 want_puret      = yes?("Do you want model translations (using puret)?")
 want_paperclip  = yes?("Do you want file uploads (using paperclip)?")
@@ -84,7 +85,7 @@ gem 'friendly_id', '>=3.1.3'
 gem "formtastic", :git => "git://github.com/justinfrench/formtastic.git", :branch => "rails3"
 gem 'jquery-rails'
 gem 'compass', '>= 0.10.5'
-gem 'html5-boilerplate'
+gem 'html5-boilerplate', :git => 'git://github.com/jeanmartin/compass-html5-boilerplate.git'
 gem 'haml', '>=3.0.18'
 gem 'hoe', '>=2.6.1'
 gem 'mongrel'
@@ -95,10 +96,12 @@ gem 'spork'
 gem 'rspec-rails', '>= 2.0.0.beta.20'
 gem 'test-unit', '>=2.1.1'
 gem 'will_paginate', :git => 'http://github.com/mislav/will_paginate.git', :branch => 'rails3'
+#{"gem 'jspec'" if want_jspec}
 #{"gem 'paperclip'" if want_paperclip}
 #{"gem 'puret', :git => 'git://github.com/jo/puret.git'" if want_puret}
 #{"gem 'simply_stored'" if want_couchdb}
 #{"gem 'activemerchant', :git => 'git://github.com/Shopify/active_merchant.git'" if want_am}
+#{"gem 'newrelic_rpm', '>=2.13.0.beta5'" if want_newrelic}
 
 group :test do
   gem 'email_spec'
@@ -115,7 +118,6 @@ group :test do
   gem 'rspec-rails', '>= 2.0.0.beta.20'
   gem 'ZenTest'
   gem 'autotest-growl'
-  #{"gem 'jspec'" if want_jspec}
 end
 EOGEMS
 
@@ -244,9 +246,6 @@ defaults:
   site_name: #{app_fullname}
   admin_email: admin@#{app_name}.com
   blackbird: true
-  # set this to automatically include the GA code in the footer, though you
-  # probably only want to set it for production
-  google_tracker_id:
 
 production:
   site_url: http://#{app_name}.com
@@ -571,7 +570,7 @@ git :commit => "-am 'Added ApplicationHelper'"
 
 
 # use compass to bootstrap the html5 boilerplate
-run 'compass init rails -r html5-boilerplate -u html5-boilerplate --sass-dir public/stylesheets/sass/ --css-dir public/stylesheets/ --force -q'
+run 'bundle exec compass init rails -r html5-boilerplate -u html5-boilerplate --sass-dir public/stylesheets/sass/ --css-dir public/stylesheets/ --force -q'
 file 'app/views/layouts/_header.html.haml',
   open("#{SOURCE}/app/views/layouts/_header.html.haml").read
 git :add => "."

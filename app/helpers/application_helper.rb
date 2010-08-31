@@ -57,8 +57,4 @@ module ApplicationHelper
     EOC
   end
 
-  def google_account_id
-    SiteConfig.google_tracker_id
-  end
-
 end
