@@ -6,11 +6,11 @@ Before do
 end
 
 Given /^a user$/ do
-  @user = User.make!
+  @user = Factory.create(:user)
 end
 
 Given /^an admin user$/ do
-  @user = User.make!(:admin)
+  @user = Factory.create(:admin)
 end
 
 Given /^a logged in user$/ do
@@ -107,24 +107,8 @@ When /^I fill in and submit the signup form with "([^\"]*)" of "([^\"]*)"$/ do |
 end
 
 Then /^I follow an invalid password reset link$/ do
-  link = links_in_email(current_email).first.gsub(%r{/password_resets/(.*?)/edit}, '/password_resets/bad_token/edit')
-  request_uri = URI::parse(link).request_uri
-  visit request_uri
-end
-
-Then /^the user should have an email$/ do
-  @mailbox = mailbox_for(@user.email)
-end
-
-Then /^I should have a "([^\"]*)" of "([^\"]*)"$/ do |atr, value|
-  @controller.current_user.send(atr.to_sym).should eql(value)
-end
-
-Then /^I should have a "([^\"]*)" of "([^\"]*)"$/ do |atr, value|
-  @controller.current_user.send(atr.to_sym).should eql(value)
-end
-
-Then /^I should have a boolean value "([^\"]*)" that is "([^\"]*)"$/ do |atr, value|
-  value = ('1' == value || 1 == value || 'true' == value)
-  @controller.current_user.send(atr.to_sym).should eql(value)
+  # link = links_in_email(current_email).first.gsub(%r{/password_resets/(.*?)/edit}, '/password_resets/bad_token/edit')
+  # request_uri = URI::parse(link).request_uri
+  # visit request_uri
+  visit('/password_resets/bad_token/edit')
 end

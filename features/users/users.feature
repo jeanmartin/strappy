@@ -55,8 +55,9 @@ Feature: As an end user
      When I am on the forgot password page
       And I fill in and submit the forgot password form
      Then I should see "Instructions to reset your password have been emailed to you"
-      And I open the email with subject "Password Reset Instructions"
-      And I should see "A request to reset your password has been made" in the email body
+      And 1 email should be delivered to the user
+      And the email should have subject: "Password Reset Instructions"
+      And the email should contain "A request to reset your password has been made"
       And I click the first link in the email
      Then I should see "Change My Password"
      When I fill in and submit the new password form
@@ -67,8 +68,9 @@ Feature: As an end user
      When I am on the forgot password page
       And I fill in and submit the forgot password form
      Then I should see "Instructions to reset your password have been emailed to you"
-      And I open the email with subject "Password Reset Instructions"
-      And I should see "A request to reset your password has been made" in the email body
+      And 1 email should be delivered to the user
+      And the email should have subject: "Password Reset Instructions"
+      And the email should contain "A request to reset your password has been made"
       And I click the first link in the email
      Then I should see "Change My Password"
      When I fill in and submit the new password form with "x"
@@ -79,8 +81,9 @@ Feature: As an end user
      When I am on the forgot password page
       And I fill in and submit the forgot password form
      Then I should see "Instructions to reset your password have been emailed to you"
-      And I open the email with subject "Password Reset Instructions"
-      And I should see "A request to reset your password has been made" in the email body
+      And 1 email should be delivered to the user
+      And the email should have subject: "Password Reset Instructions"
+      And the email should contain "A request to reset your password has been made"
       And I follow an invalid password reset link
      Then I should see "we could not locate your account"
 
