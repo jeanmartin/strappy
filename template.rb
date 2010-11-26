@@ -1,6 +1,7 @@
 # use this for local installs
 SOURCE=ENV['SOURCE'] || 'https://github.com/jeanmartin/strappy/raw/master'
 
+# I'm lazy
 def gen(what)
   generate what
 end
