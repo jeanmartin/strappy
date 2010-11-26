@@ -49,4 +49,5 @@ puts "Successfully installed rails" if @env.system("gem", "install", "rails")
 #system("SOURCE=~/rails/plugins/strappy rvm #{rvm_ruby}@#{app_name} exec rails new #{app_name} -d mysql -m #{template_file}")
 template_file = 'https://github.com/jeanmartin/strappy/raw/master/template.rb'
 puts "Initializing rails app with template '#{template_file}'"
+puts "running: #{"rvm #{rvm_ruby}@#{app_name} exec rails new #{app_name} -d mysql -m #{template_file}"}"
 system("rvm #{rvm_ruby}@#{app_name} exec rails new #{app_name} -d mysql -m #{template_file}")
