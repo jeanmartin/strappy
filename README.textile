@@ -1,6 +1,6 @@
 h1. Strappy
 
-Bootstrap a Rails 2.3 app with a template
+Bootstrap a Rails 3 app with a template
 
 h2. Notes for anybody using older versions of Strappy
 
