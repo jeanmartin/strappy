@@ -15,10 +15,7 @@ def ask(question)
 end
 
 def gets
-  system "/bin/stty raw -echo"
   STDIN.gets
-ensure
-  system "/bin/stty -raw echo"
 end
 
 app_name = ARGV[0] || ask("Tell me the shortname of your application (will be used in 'rails new <app_name>'):")
