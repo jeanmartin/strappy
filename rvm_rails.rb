@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 rvm_lib_path = "#{`echo $rvm_path`.strip}/lib"
 $LOAD_PATH.unshift(rvm_lib_path) unless $LOAD_PATH.include?(rvm_lib_path)
 require 'rvm'
@@ -38,8 +40,6 @@ puts "Installing gem: bundler"
 puts "Successfully installed bundler" if @env.system("gem", "install", "bundler")
 puts "Installing gem: rails"
 puts "Successfully installed rails" if @env.system("gem", "install", "rails")
-
-#template_file = File.join(File.expand_path(File.dirname(__FILE__)), 'templater.rb')
 
 #template_file = '~/rails/plugins/strappy/template.rb'
 #system("SOURCE=~/rails/plugins/strappy rvm #{rvm_ruby}@#{app_name} exec rails new #{app_name} -d mysql -m #{template_file}")
