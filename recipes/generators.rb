@@ -2,9 +2,6 @@
 # whenever
 run 'wheneverize .'
 
-# hoptoad
-gen "hoptoad --api-key #{@hoptoad_key}" if @want_hoptoad
-
 # jquery-rails
 gen 'jquery:install --ui'
 git :add => '.'
