@@ -21,7 +21,7 @@ defaults:
   site_url: http://localhost:3000/
   host_name: #{app_name}.com
   mail_from: noreply@#{app_name}.com
-  site_name: #{app_fullname}
+  site_name: #{@app_fullname}
   admin_email: admin@#{app_name}.com
   blackbird: true
 
