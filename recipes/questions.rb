@@ -15,16 +15,20 @@ puts "\n#{'*' * 80}\n"
 puts "Questions 2/3: plugins & gems"
 puts "#{'*' * 80}\n\n"
 
-@want_resque         = yes?("Do you want to use job queuing (resque)?")
-@want_resque_mailer  = yes?("Do you want to use mail queuing (resque_mailer)?") if @want_resque
+@want_resque         = yes?("Do you want job queuing (resque)?")
+@want_resque_mailer  = yes?("Do you want mail queuing (resque_mailer)?") if @want_resque
 @want_newrelic       = yes?("Do you want New Relic?")
 @want_geocoding      = yes?("Do you want geocoding (using geocoder)?")
 @want_puret          = yes?("Do you want model translations (using puret)?")
 @want_paperclip      = yes?("Do you want file uploads (using paperclip)?")
 @want_ssl            = yes?("Do you want SSL (ssl_requirement plugin)?")
 @want_am             = yes?("Do you want online payment (using active_merchant)?")
-@want_couchdb        = yes?("Do you want to use CouchDB (using simply_stored)?")
+@want_couchdb        = yes?("Do you want CouchDB (using simply_stored)?")
 @want_jspec          = yes?("Do you want JavaScript tests (using JSpec)?")
+@want_hoptoad        = yes?("Do you want Hoptoad?")
+if @want_hoptoad
+  @hoptoad_key        = ask("Please enter your Hoptoad API Key:")
+end
 puts "\n#{'*' * 80}\n\n"
 
 puts "\n#{'*' * 80}\n"

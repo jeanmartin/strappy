@@ -36,6 +36,7 @@ gem 'SystemTimer'
 #{"gem 'rails-geocoder', :require => 'geocoder'" if @want_geocoding}
 #{"gem 'resque'" if @want_resque}
 #{"gem 'resque_mailer'" if @want_resque_mailer}
+#{"gem 'hoptoad_notifier'" if @want_hoptoad}
 
 group :development do
   gem 'rails3-generators'
