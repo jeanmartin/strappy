@@ -7,11 +7,10 @@ gen 'jquery:install --ui'
 git :add => '.'
 git :commit => "-am 'installed jQuery (+UI)'"
 
-# HAML & SASS
-run 'echo N\n | haml --rails .'
+# SASS folder
 run 'mkdir -p public/stylesheets/sass'
 git :add => "."
-git :commit => "-am 'initialized Haml and Sass'"
+git :commit => "-am 'created SASS directory'"
 
 # JSpec
 if @want_jspec

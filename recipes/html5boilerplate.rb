@@ -8,20 +8,7 @@ file 'app/views/layouts/_header.html.haml',
 git :add => "."
 git :commit => "-am 'Added HTML5 Layout and templates'"
 
-# patch javascript(-includes)
-
-# remove jquery-1.4.2.min.js since we already got jquery.min.js
-run 'rm public/javascripts/jquery-1.4.2.min.js'
-
-# exchange jquery 1.4.2 with 1.4.3
-file_str_replace('app/views/layouts/_javascripts.html.haml',
-  'google.load("jquery", "1.4.2");',
-  'google.load("jquery", "1.4.3");'
-)
-file_str_replace('app/views/layouts/_javascripts.html.haml',
-  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"',
-  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"'
-)
+# patch javascript(-includes) etc.
 
 # add i18n & application js file(s)
 file "public/javascripts/application.js", open("#{SOURCE}/public/javascripts/application.js").read
@@ -34,22 +21,22 @@ file_str_replace('app/views/layouts/_stylesheets.html.haml',
 )
 # include jquery ui
 file_inject('app/views/layouts/_javascripts.html.haml',
- 'google.load("jquery", "1.4.3");',
+ 'google.load("jquery", "1.4.4");',
  '    google.load("jqueryui", "1.8.6");',
   :after
 )
 file_str_replace('app/views/layouts/_javascripts.html.haml',
-  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"',
-  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/i18n/jquery-ui-i18n.min.js"'
+  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"',
+  '= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js", "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/i18n/jquery-ui-i18n.min.js"'
 )
 # include blackbird
 file_inject('app/views/layouts/_javascripts.html.haml',
-  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.3.min") }\')',
+  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.4.min") }\')',
   "\n= blackbird_tags.html_safe",
   :after
 )
 file_str_replace('app/views/layouts/_javascripts.html.haml',
-  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.3.min") }\')',
+  '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery-1.4.4.min") }\')',
   '!window.jQuery && document.write(\'#{ escape_javascript(javascript_include_tag "jquery.min", "jquery-ui.min", "jquery-ui-i18n.min", :cache => "jquery_all") }\')'
 )
 file_str_replace('app/views/layouts/_javascripts.html.haml',
@@ -70,6 +57,6 @@ git :add => "."
 git :commit => "-am 'Added custom js and js patches'"
 
 # add formtastic.scss
-file 'public/stylesheets/sass/formtastic.scss', open("#{SOURCE}/public/stylesheets/formtastic.scss").read
+file 'public/stylesheets/sass/formtastic.scss', open("#{SOURCE}/public/stylesheets/sass/formtastic.scss").read
 git :add => "."
 git :commit => "-am 'added formtastic css'"
