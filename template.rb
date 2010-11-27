@@ -44,7 +44,7 @@ puts "#{'*' * 80}\n\n"
   :generators,
   :patches,
   :html5boilerplate,
-  :routes
+  :routes,
   :mvc_scaffold,
   :custom_files_and_patches,
   :ci_and_deployment,
